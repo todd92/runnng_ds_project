@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
 
+print("Test")
+
 # Set a random seed for reproducibility
 np.random.seed(42)
 
@@ -17,7 +19,7 @@ class KMeans:
 
         Args:
             k (int): The number of clusters to find.
-            max_iters (int): The maximum number of iterations to run.
+            max_iters (int): The maximum number of iterations  run.
             tol (float): Tolerance for centroid movement. If centroids move
                          less than this amount, the algorithm has converged.
             visualize_steps (bool): If True, plots each iteration of the algorithm.

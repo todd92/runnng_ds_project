@@ -1,11 +1,15 @@
+import os 
+from dotenv import load_dotenv
 from garminconnect import Garmin
 import datetime
 from datetime import date
 import json
 import pandas as pd
 
-username = "*********"
-password = "*********"
+load_dotenv()
+
+username = os.getenv("GARMIN_UNAME")
+password = os.getenv("GARMIN_PWORD")
 
 api = Garmin(username, password)
 api.login()
