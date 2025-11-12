@@ -14,7 +14,7 @@ Environment files
 Compiled/bytecode files
 
 *.pyc
-pycache/
+__pycache__/
 
 Distribution / packaging
 
