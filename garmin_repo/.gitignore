@@ -1,1 +1,23 @@
+Python
+
+---
+
+Virtual environments
+
+venv/
+.venv/
+
+Environment files
+
 .env
+
+Compiled/bytecode files
+
+*.pyc
+pycache/
+
+Distribution / packaging
+
+build/
+dist/
+*.egg-info/
