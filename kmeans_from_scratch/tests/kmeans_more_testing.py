@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import random
+import pickle
 
 # These are just here from your original code, they aren't used by the class
 first_clustering = np.array([[1, 3], [1, 4], [1, 0], [10, 3], [10, 4], [10, 0]])
@@ -203,12 +204,43 @@ def create_sample_data():
     np.random.shuffle(X)
     return X
 
+import matplotlib.pyplot as plt
+
+def plot_clusters(X, labels, centroids, k):
+    # Assuming X column 0 is Distance and column 3 is MaxHR
+    # (Check your load_data function to be sure of column indices!)
+    
+    # We need to know which index corresponds to which column.
+    # Based on your previous printout:
+    # Col 0 = distance_miles
+    # Col 3 = maxHR (This is a guess, check your specific X structure)
+    
+    x_col_idx = 6  # Average Cadence
+    y_col_idx = 17  # MaxHR
+    
+    plt.figure(figsize=(10, 6))
+    
+    # Scatter plot for the data points
+    scatter = plt.scatter(X[:, x_col_idx], X[:, y_col_idx], c=labels, cmap='viridis', alpha=0.6)
+    
+    # Plot the centroids (Marked with a big Red X)
+    plt.scatter(centroids[:, x_col_idx], centroids[:, y_col_idx], 
+                s=300, c='red', marker='x', label='Centroids')
+    
+    plt.title(f'K-Means Clustering (k={k})')
+    plt.xlabel('Distance (Scaled)') # Remember these are Z-scores!
+    plt.ylabel('Max HR (Scaled)')
+    plt.colorbar(scatter, label='Cluster Label')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
 
 # --- Main execution block (Your testing ground) ---
 if __name__ == "__main__":
     # 1. Load Data
     # Ensure your loader returns BOTH the scaled array (X) and the original df
-    FILE_PATH = "/home/toddglad/projects/garmin_repo/Data/activity_fact.csv"
+    FILE_PATH = "/home/toddglad/projects/garmin_repo/kmeans_from_scratch/tests/activity_fact.csv"
     X, df_original = load_data_from_csv(FILE_PATH)
 
     if X is not None:
@@ -233,14 +265,15 @@ if __name__ == "__main__":
         # PART 2: The Detailed Analysis
         # ==========================================
         print("\n--- Running Detailed Analysis ---")
-
+        # Paste this in your main block to find the index numbers
         # CHANGE THIS NUMBER based on what you see in Part 1
-        BEST_K = 14
+        BEST_K = 3
 
         print(f"Fitting model with k={BEST_K}...")
         kmeans = Kmeans(k=BEST_K, max_iters=100, random_state=42)
         kmeans.fit(X)
         labels = kmeans.predict(X)
+        
 
         # --- Print Results using the ORIGINAL DataFrame ---
         if labels is not None:
@@ -262,8 +295,61 @@ if __name__ == "__main__":
                 (cluster_2["distance_miles"] > 6) & (cluster_2["distance_miles"] < 20)
             ]
             print(long_runs)
+            plot_clusters(X, labels, kmeans.centroids, BEST_K)
         else:
             print("Prediction failed.")
+# ... inside Part 2, after fitting and predicting ...
+
+        print("\n--- Feature Importance Analysis ---")
+        
+        # 1. Calculate the 'Spread' of the centroids for each column
+        #    High Spread = This feature is very different between clusters (IMPORTANT)
+        #    Low Spread  = This feature is basically the same in all clusters (USELESS)
+        centroid_ranges = np.ptp(kmeans.centroids, axis=0)
+        
+        # 2. Get the column names so we know what we are looking at
+        column_names = df_original.columns
+        
+        # 3. Zip them together so we can sort them
+        features = list(zip(column_names, centroid_ranges))
+        
+        # 4. Sort by the score (highest first)
+        features.sort(key=lambda x: x[1], reverse=True)
+        
+        # 5. Print the results
+        # Paste this in your main block to find the index numbers
+        print(f"Index of 'steps': {list(df_original.columns).index('steps')}")
+        print(f"Index of 'hrTimeInZone_4': {list(df_original.columns).index('hrTimeInZone_4')}")
+        
+        # Change these numbers to the two clusters that look close on the plot
+        cluster_A = 2 
+        cluster_B = 1
+
+# Compare just these two rows from your profile
+        comparison = cluster_profile.loc[[cluster_A, cluster_B]]
+
+# Transpose it (swap rows/cols) so it's easier to read
+        print(f"\n--- Face-off: Cluster {cluster_A} vs Cluster {cluster_B} ---")
+        print(comparison.T)
+        for name, score in features:
+            print(f"{name}: {score:.4f}")
+        
+        
+        # === PASTE THIS HERE ===
+        print("\nSaving model for API...")
+        
+        # We package everything the API needs into one dictionary
+        model_package = {
+            "model": kmeans,                    # The trained brain
+            "scaler_mean": df_original.mean(),  # The math to scale new data
+            "scaler_std": df_original.std(),    # The math to scale new data
+            "columns": df_original.columns.tolist() # The order of columns
+        }
+
+        with open("running_model.pkl", "wb") as f:
+            pickle.dump(model_package, f)
+
+        print("Success! running_model.pkl created.")
 
     else:
         print("Could not run clustering as no data was loaded.")
