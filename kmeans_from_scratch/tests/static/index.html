@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Run Classifier AI</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 350px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+
+        .cluster-0 {
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            border: 1px solid #bbdefb;
+        }
+
+        .cluster-1 {
+            background-color: #e8f5e9;
+            color: #1b5e20;
+            border: 1px solid #c8e6c9;
+        }
+
+        .cluster-2 {
+            background-color: #fff3e0;
+            color: #e65100;
+            border: 1px solid #ffe0b2;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🏃 Run Classifier</h1>
+        <div class="form-group">
+            <label>Distance (Miles)</label>
+            <input type="number" id="distance" step="0.1" value="5.0">
+        </div>
+        <div class="form-group">
+            <label>Duration (Minutes)</label>
+            <input type="number" id="duration" step="1" value="45">
+        </div>
+        <div class="form-group">
+            <label>Max Heart Rate</label>
+            <input type="number" id="hr" step="1" value="160">
+        </div>
+        <div class="form-group">
+            <label>Steps</label>
+            <input type="number" id="steps" step="100" value="6000">
+        </div>
+        <button onclick="predictCluster()">Classify Run</button>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function predictCluster() {
+            const distance = parseFloat(document.getElementById('distance').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const hr = parseFloat(document.getElementById('hr').value);
+            const steps = parseFloat(document.getElementById('steps').value);
+
+            const payload = {
+                "data": {
+                    "distance_miles": distance,
+                    "duration_minutes": duration,
+                    "maxHR": hr,
+                    "steps": steps
+                }
+            };
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = "Thinking...";
+            resultDiv.className = "";
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                resultDiv.innerHTML = `<strong>${data.cluster_name}</strong><br>Cluster ID: ${data.cluster_id}`;
+                resultDiv.classList.add(`cluster-${data.cluster_id}`);
+            } catch (error) {
+                resultDiv.innerHTML = "Error connecting to AI";
+                resultDiv.style.color = "red";
+            }
+        }
+    </script>
+</body>
+
+</html>

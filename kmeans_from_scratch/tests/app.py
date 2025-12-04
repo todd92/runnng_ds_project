@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles # <--- Add this
+from fastapi.middleware.cors import CORSMiddleware # <--- Add this
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 import pickle
 import pandas as pd
@@ -196,6 +199,23 @@ except AttributeError:
     sys.exit(1)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (good for development)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 2. Mount the 'static' folder so we can serve CSS/JS if needed later
+# (We will create this folder in a second)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# 3. Serve the Frontend at the root URL "/"
+@app.get("/")
+def read_root():
+    return FileResponse('static/index.html')
 
 # ==========================================
 # 3. DEFINE INPUT DATA
