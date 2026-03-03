@@ -3,6 +3,8 @@ import numpy as np
 from pandas.api.types import is_numeric_dtype
 import matplotlib.pyplot as plt
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 
 
 garmin_act = pd.read_csv("C:/Users/toddglad/Downloads/garmin_activities.csv")
@@ -159,9 +161,11 @@ import json
 
 help(Garmin)
 help(json)
-# Replace with your credentials
-username = "GARMIN_UNAME"
-password = "GARMIN_PWORD"
+load_dotenv()
+username = os.getenv("GARMIN_UNAME")
+password = os.getenv("GARMIN_PWORD")
+if not username or not password:
+    raise RuntimeError("GARMIN_UNAME and GARMIN_PWORD must be set in the environment.")
 
 try:
     api = Garmin(username, password)

@@ -1,27 +1,20 @@
-Python
-
----
-
-Virtual environments
-
-venv/
-.venv/
-
-Environment files
-
-.env
-
-Compiled/bytecode files
-
-*.pyc
+# Python
 __pycache__/
+*.py[cod]
+*.pyo
 
-Distribution / packaging
+# Virtual envs
+.venv/
+venv/
 
+# Env files
+.env
+.env.*
+
+# Build artifacts
 build/
 dist/
 *.egg-info/
 
-
-CSV files
-*.csv
+# OS/Windows metadata
+*.Zone.Identifier
