@@ -18,3 +18,6 @@ dist/
 
 # OS/Windows metadata
 *.Zone.Identifier
+
+# Embedded git metadata directory (do not track)
+runnng_ds_project.git/
